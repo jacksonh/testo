@@ -1,4 +1,3 @@
-
 /*
  * A simple test that fetches a list of items from the webserver 
  * and displays them in a UITableView.
@@ -89,6 +88,15 @@ device.step ('press sync button', function (feeditems, target, app, next) {
 	// testo uses mechanic.js to give tests a jquery-like selector syntax 
 	// for interacting with UIAutomation items.
 	$('#sync_button').click ();
+	next (feeditems);
+});
+
+// Playing around with this here, but I think there is a need to integrate the
+// webserver into the whole step process, so something like returning from 
+// an http request can be a step and an event is fired once that request 
+// has completed.
+webservice.step ('get', '/feed/', function (feeditems, req, res, next) {
+	res.send (JSON.stringify (feed));
 	next (feeditems);
 });
 
