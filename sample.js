@@ -95,6 +95,7 @@ device.step ('press sync button', function (feeditems, target, app, next) {
 // webserver into the whole step process, so something like returning from 
 // an http request can be a step and an event is fired once that request 
 // has completed.
+// Otherwise you wind up in scenarios like "click the sync button, wait 5s"
 webservice.step ('get', '/feed/', function (feeditems, req, res, next) {
 	res.send (JSON.stringify (feed));
 	next (feeditems);
