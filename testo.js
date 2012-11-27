@@ -1,36 +1,42 @@
 
+var steps;
+
+function addStep (name, target, ctx, func) {
+	var step = {
+		name: name,
+		target: target,
+		context: ctx,
+		func: func
+	};
+	steps.push (step);
+	return step;
+}
 
 var hostClass = function () {
 	
 	this.step = function (name, func) {
-		console.log ('host registered: ' + name);
-	};
+		console.log ('host registered a step.');
 
-	this.asyncStep = function (name, func) {
-		console.log ('host registered async: ' + name);
+		return addStep (name, 'host', {},  func);
 	};
 };
 
 var deviceClass = function () {
 	
 	this.step = function (name, func) {
-		console.log ('device registered: ' + name);
-	};
+		console.log ('device registered a step.');
 
-	this.asyncStep = function (name, func) {
-		console.log ('device registered async: ' + name);
+		return addStep (name, 'device', {},  func);
 	};
 };
 
+exports.steps = steps;
+exports.host = new hostClass;
+exports.device = new deviceClass;
 
-exports.createHost = function () {
-
-	return new hostClass;
+exports.reset = function () {
+	console.log ('reseting the steps');
+	exports.steps = steps = [];
 };
 
-
-exports.createDevice = function () {
-
-	return new deviceClass;
-};
-
+exports.reset ();
