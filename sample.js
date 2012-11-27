@@ -7,6 +7,7 @@ var testo = require ('./testo');
 
 var host = testo.host;
 var device = testo.device;
+/*
 var webserver = testo.createServer();
 
 //
@@ -42,7 +43,7 @@ webserver.get ('/feed/', function (req, res) {
 // makes it easy to mock pieces of a webservices without having to
 // build functionality for every other webcall
 webserver.proxyUnknownTo ('http://mytestserver.com');
-
+*/
 
 // 
 // TEST STEPS
@@ -90,7 +91,7 @@ device.step ('press sync button', function (feeditems, target, app, next) {
 	$('#sync_button').click ();
 	next (feeditems);
 });
-
+/*
 // Playing around with this here, but I think there is a need to integrate the
 // webserver into the whole step process, so something like returning from 
 // an http request can be a step and an event is fired once that request 
@@ -100,7 +101,7 @@ webservice.step ('get', '/feed/', function (feeditems, req, res, next) {
 	res.send (JSON.stringify (feed));
 	next (feeditems);
 });
-
+*/
 
 device.step ('verify feed items', function (feeditems, target, app, next) {
     var cell_count = $('#feed_table').find ('cell').size ();

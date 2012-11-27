@@ -1,14 +1,18 @@
 
-var steps;
 
-function addStep (name, target, ctx, func) {
+
+exports.steps = [];
+exports.timeout = 1000 * 5;
+exports.traceTemplate = ' /Developer/Platforms/iPhoneOS.platform/Developer/Library/Instruments/PlugIns/AutomationInstrument.bundle/Contents/Resources/Automation.tracetemplate';
+
+var addStep = function (name, target, ctx, func) {
 	var step = {
 		name: name,
 		target: target,
 		context: ctx,
 		func: func
 	};
-	steps.push (step);
+	exports.steps.push (step);
 	return step;
 }
 
@@ -30,9 +34,10 @@ var deviceClass = function () {
 	};
 };
 
-exports.steps = steps;
+
 exports.host = new hostClass;
 exports.device = new deviceClass;
+
 
 exports.reset = function () {
 	console.log ('reseting the steps');
