@@ -1,0 +1,58 @@
+
+
+{{ imports }}
+
+var getNext = function () {
+    var target = UIATarget.localTarget();
+    var host = target.host();
+    var args = [];
+
+    args.push ('-d ""');
+    args.push ('http://127.0.0.1:3000/sl/next');
+    
+    var result = host.performTaskWithPathArgumentsTimeout("/usr/bin/curl", args, 10);
+
+    if (result.exitCode != 0) {
+        UIALogger.logDebug("exitCode: " + result.exitCode);
+        UIALogger.logDebug("stdout: " + result.stdout);
+        UIALogger.logDebug("stderr: " + result.stderr);
+    
+        throw 'Unable to send host message.';
+    }
+    
+    if (result.stdout.length > 0) {
+        UIALogger.logDebug ("stdout: " + result.stdout);
+        var res = JSON.parse (result.stdout);
+        UIALogger.logDebug ("object: " + JSON.stringify (res));
+    
+        return res;
+    }
+};
+
+var next = getNext ();
+
+eval ('var f = ' + next.func+ '; f ();');
+
+
+/*
+UIATarget.localTarget().delay(2);
+
+var window = UIATarget.localTarget().frontMostApp().mainWindow ();
+	var toolbar = window.toolbar ();
+	var textFields = toolbar.secureTextFields ();
+
+	// textFields [0].tap ();
+	textFields [0].setValue ('8245');
+
+// target.frontMostApp().keyboard().tapWithOptions({tapOffset:{x:0.02, y:0.79}});
+// target.frontMostApp().keyboard().dragInsideWithOptions({startOffset:{x:0.02, y:0.60}, endOffset:{x:0.04, y:0.89}});
+// UIALogger.logDebug (textFields);
+
+var buttons = textFields [0].buttons ();
+	//if (buttons.length != 1) {
+	//      UIALogger.logFail ("FAIL: Incorrect number of buttons on PIN login screen");
+	// }
+
+buttons [0].tap ();
+*/
+// UIATarget.localTarget().delay(20);

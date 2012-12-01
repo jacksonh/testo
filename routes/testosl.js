@@ -4,6 +4,7 @@ var testo = require ('../testo'),
 	temp = require ('temp'),
 	http = require ('http'),
 	exec = require('child_process').exec,
+	mustache = require('mustache'),
 	fruitstrap = require ('../fruitstrap');
 
 
@@ -40,16 +41,25 @@ var executeTest = function (app, test, device) {
 
 	console.log ('testo steps: ' + testo.steps.length);
 
-	var scriptPath = createInstrumentsScript ();
-	startInstruments (scriptPath);
+	createInstrumentsScript (function (scriptPath) {
+		startInstruments (scriptPath);
+	});
 }
 
-var createInstrumentsScript = function () {
+var createInstrumentsScript = function (cb) {
 
 	var path = temp.path ({suffix: '.js'});
 	console.log ('file: ' + path);
 
-	return path;
+	var data = {};
+	fs.readFile('./instruments-script.js.mustache', function (err, template) {
+    	var output = mustache.render(template.toString (), data);
+    	console.log ('script_data\n' + output);
+
+    	fs.writeFile (path, output, function (err) {
+			cb (path);
+		});
+	});
 }
 
 var startInstruments = function (path) {
@@ -61,6 +71,8 @@ var startInstruments = function (path) {
 				  ' ' + state.app + 
 				  ' -e UIASCRIPT ' + path;
 
+	console.log (execute);
+	
 	var instruments = exec (execute, function (error, stdout, stderr) {
 		console.log ('error:  '  + error);
 		console.log ('stdout: '  + stdout);
@@ -84,11 +96,10 @@ exports.next = function (req, res) {
 	var ndata = req.body.ndata;
 	var nerror = req.body.nerror;
 
+	console.log ('current step: ' + testo.steps [state.step].func);
 	var step = {
 		name: 'the next step',
-		func: function (test, next) { 
-			console.log ('a function');
-		}.toString ()
+		func: testo.steps [state.step].func.toString ()
 	};
 
 	res.json (step);

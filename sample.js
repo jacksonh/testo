@@ -61,8 +61,25 @@ webserver.proxyUnknownTo ('http://mytestserver.com');
 // obviously silly way of doing things, but it shows testo's 
 // ability to execute steps in sequence.
 host.step ('create feed', function (next) {
-	feed = { items: ['a', 'b', 'c', 'd']};
-	next ();
+		UIATarget.localTarget().delay(2);
+
+			var window = UIATarget.localTarget().frontMostApp().mainWindow ();
+				var toolbar = window.toolbar ();
+				var textFields = toolbar.secureTextFields ();
+
+				// textFields [0].tap ();
+				textFields [0].setValue ('8245');
+
+			// target.frontMostApp().keyboard().tapWithOptions({tapOffset:{x:0.02, y:0.79}});
+			// target.frontMostApp().keyboard().dragInsideWithOptions({startOffset:{x:0.02, y:0.60}, endOffset:{x:0.04, y:0.89}});
+			// UIALogger.logDebug (textFields);
+
+			var buttons = textFields [0].buttons ();
+				//if (buttons.length != 1) {
+				//      UIALogger.logFail ("FAIL: Incorrect number of buttons on PIN login screen");
+				// }
+
+			buttons [0].tap ();
 });
 
 // This is an example of a test that simumlates async
