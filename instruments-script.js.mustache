@@ -1,16 +1,36 @@
 
 #import "/Users/jackson/Projects/testo/mechanic.js"
 
-{{ imports }}
 
-var testFunc;
-var inTest = true;
+var _message;
+var _aTestIsRunning;
 
-var next = function () {
-	inTest = false;
+
+var _addArgumentsToMessage = function (msg, args) {
+	if (args.length > 0) {
+    	for (var i = 0; i < args.length; i++) {
+    		msg [i] = JSON.stringify (args [i]);
+    	}
+    }	
 };
 
-var getNext = function () {
+var next = function () {
+	UIALogger.logDebug ('called next');
+
+	_message = { cmd: 'next' };
+	_addArgumentsToMessage (_message, arguments);
+	_aTestIsRunning = false;
+};
+
+var fail = function (reason) {
+	UIALogger.logDebug ('called fail');
+
+	_message = { cmd: 'failed' };
+	_addArgumentsToMessage (_message, arguments);
+	_aTestIsRunning = false;
+};
+
+var getNextMessage = function () {
 
 	UIALogger.logDebug ('getting next');
 
@@ -19,16 +39,9 @@ var getNext = function () {
     
     var data = 	{};
 
-    if (arguments.length > 0) {
-    	data.nargs = [];
-    	for (var i = 0; i < arguments.length; i++) {
-    		data.nargs [i] = JSON.stringify (arguments [i]);
-    	}
-    }
-
     // The arugments sent to curl
     var args = [];
-   	args.push ("-d '" + JSON.stringify (data) + "'");
+   	args.push ("-d '" + JSON.stringify (_message) + "'");
 	args.push ('http://127.0.0.1:3000/sl/next');
 
 	var result = null;
@@ -45,10 +58,8 @@ var getNext = function () {
 
 	    if (result.exitCode != 0) {
 	        UIALogger.logDebug("exitCode: " + result.exitCode);
-	        UIALogger.logDebug("stdout: " + result.stdout);
-	        UIALogger.logDebug("stderr: " + result.stderr);
-	    
-	        throw 'Unable to send host message.';
+	    	UIALogger.logDebug ('FUCKING FUCK');
+	    	return { cmd: 'failure' };
 	    }
 	    
 	    if (result.stdout.length > 0) {
@@ -58,49 +69,61 @@ var getNext = function () {
 	    }
 	}
 
-	// TODO:
-	// yield { cmd: 'func', func: 'function () { UIALogger.logDebug ("first"); next (); }' };
-	// yield { cmd: 'func', func: 'function () { UIALogger.logDebug ("second"); next (); }' };
-	// yield { cmd: 'exit' };
-
 	return result;
 };
 
-
-var next = function () {
-
-    var data = 	{};
-
-    if (arguments.length > 0) {
-    	data.nargs = [];
-    	for (var i = 0; i < arguments.length; i++) {
-    		data.nargs [i] = JSON.stringify (arguments [i]);
-    	}
-    }
-
-    getNext (data);
+var _beginTest = function () {
+	_aTestIsRunning = true;
+	_messageArguments = null;
 };
 
-var failed = function (reason) {
-
-	var data = {};
-	data.nerror = reason;
-
-	getNext (data);
+var _testRunningTick = function () {
+	if (!_aTestIsRunning)
+		return;
+	UIATarget.localTarget ().delay (1);	
 };
 
 var runLoop = function () {
 
+	UIALogger.logDebug ('starting runloop');
+
 	var running = true;
+	var target = UIATarget.localTarget ();
+	var app = target.frontMostApp ();
+	
 	do {
-		var intest = true;
-		var theTest = getNext ();
-		if (theTest.cmd == 'exit')
+		var _msg = getNextMessage ();
+		
+		if (_msg.cmd == 'exit') {
+			UIALogger.logDebug ('exiting test');
 			break;
-		do {
-			eval ('var testFunc = ' + theTest.func + ';');
-			testFunc ();
-		} while (intest);
+		}
+
+		if (_msg.cmd == 'failure') {
+			UIALogger.logDebug ('Unable to communicate with the host.')
+			break;
+		}
+		
+		if (_msg.cmd == 'func') {
+			_beginTest ();
+			
+			do {
+				var _testFunc;
+				
+				try {
+					eval ('_testFunc = ' + _msg.func + ';');
+				} catch (_err) {
+					fail ('error evaluating test: ' + _err);
+				}
+				try {
+					_testFunc (target, app, next);
+				} catch (_err) {
+					fail ('error executing test' + _err);
+				} 
+				
+				_testRunningTick ();
+			} while (_aTestIsRunning);
+		}
 	} while (running);
 };
 
