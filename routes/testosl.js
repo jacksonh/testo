@@ -96,13 +96,23 @@ exports.next = function (req, res) {
 	var ndata = req.body.ndata;
 	var nerror = req.body.nerror;
 
-	console.log ('current step: ' + testo.steps [state.step].func);
-	var step = {
-		name: 'the next step',
-		func: testo.steps [state.step].func.toString ()
-	};
+	console.log ('current step index: ' + state.step);	
+	var send;
+	if (state.step < testo.steps.length) {
+		console.log ('current step: ' + testo.steps [state.step].func);
 
-	res.json (step);
+		var step = testo.steps [state.step];
+		send = {
+			name: step.title,
+			cmd: 'func',
+			func: step.func.toString ()
+		};
+	} else
+		send = { cmd: 'exit' };
+
+	res.json (send);
+
+	state.step = state.step + 1;
 };
 
 exports.state = function (req, res) {
@@ -117,7 +127,7 @@ exports.begin = function (req, res) {
 	var device = req.body.device;
 
 	if (app == null || test == null || device == null) {
-		console.log ('missing required parameter');
+		console.log ('missing required parameter app: ' + app + ' test: ' + test + ' device: ' + device);
 		res.send (500);
 		return;
 	}
