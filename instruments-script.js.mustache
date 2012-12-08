@@ -1,58 +1,110 @@
 
+#import "/Users/jackson/Projects/testo/mechanic.js"
 
 {{ imports }}
 
-var getNext = function () {
-    var target = UIATarget.localTarget();
-    var host = target.host();
-    var args = [];
+var testFunc;
+var inTest = true;
 
-    args.push ('-d ""');
-    args.push ('http://127.0.0.1:3000/sl/next');
-    
-    var result = host.performTaskWithPathArgumentsTimeout("/usr/bin/curl", args, 10);
-
-    if (result.exitCode != 0) {
-        UIALogger.logDebug("exitCode: " + result.exitCode);
-        UIALogger.logDebug("stdout: " + result.stdout);
-        UIALogger.logDebug("stderr: " + result.stderr);
-    
-        throw 'Unable to send host message.';
-    }
-    
-    if (result.stdout.length > 0) {
-        UIALogger.logDebug ("stdout: " + result.stdout);
-        var res = JSON.parse (result.stdout);
-        UIALogger.logDebug ("object: " + JSON.stringify (res));
-    
-        return res;
-    }
+var next = function () {
+	inTest = false;
 };
 
-var next = getNext ();
+var getNext = function () {
 
-eval ('var f = ' + next.func+ '; f ();');
+	UIALogger.logDebug ('getting next');
+
+    var target = UIATarget.localTarget();
+    var host = target.host();
+    
+    var data = 	{};
+
+    if (arguments.length > 0) {
+    	data.nargs = [];
+    	for (var i = 0; i < arguments.length; i++) {
+    		data.nargs [i] = JSON.stringify (arguments [i]);
+    	}
+    }
+
+    // The arugments sent to curl
+    var args = [];
+   	args.push ("-d '" + JSON.stringify (data) + "'");
+	args.push ('http://127.0.0.1:3000/sl/next');
+
+	var result = null;
+    var waiting = true;
+    while (waiting) {
+    	// TODO: figure out what error we get from this method on timeout. We already handle curl's timeout
+    	// but we need to handle the hosts timeout too.
+	    var result = host.performTaskWithPathArgumentsTimeout("/usr/bin/curl", args, 100);
+
+	    // timeout error, just retry
+	    if (result.exitCode == 28) {
+	    	continue;
+	    }
+
+	    if (result.exitCode != 0) {
+	        UIALogger.logDebug("exitCode: " + result.exitCode);
+	        UIALogger.logDebug("stdout: " + result.stdout);
+	        UIALogger.logDebug("stderr: " + result.stderr);
+	    
+	        throw 'Unable to send host message.';
+	    }
+	    
+	    if (result.stdout.length > 0) {
+	        UIALogger.logDebug ("stdout: " + result.stdout);
+	        result = JSON.parse (result.stdout);
+	    	break;
+	    }
+	}
+
+	// TODO:
+	// yield { cmd: 'func', func: 'function () { UIALogger.logDebug ("first"); next (); }' };
+	// yield { cmd: 'func', func: 'function () { UIALogger.logDebug ("second"); next (); }' };
+	// yield { cmd: 'exit' };
+
+	return result;
+};
 
 
-/*
-UIATarget.localTarget().delay(2);
+var next = function () {
 
-var window = UIATarget.localTarget().frontMostApp().mainWindow ();
-	var toolbar = window.toolbar ();
-	var textFields = toolbar.secureTextFields ();
+    var data = 	{};
 
-	// textFields [0].tap ();
-	textFields [0].setValue ('8245');
+    if (arguments.length > 0) {
+    	data.nargs = [];
+    	for (var i = 0; i < arguments.length; i++) {
+    		data.nargs [i] = JSON.stringify (arguments [i]);
+    	}
+    }
 
-// target.frontMostApp().keyboard().tapWithOptions({tapOffset:{x:0.02, y:0.79}});
-// target.frontMostApp().keyboard().dragInsideWithOptions({startOffset:{x:0.02, y:0.60}, endOffset:{x:0.04, y:0.89}});
-// UIALogger.logDebug (textFields);
+    getNext (data);
+};
 
-var buttons = textFields [0].buttons ();
-	//if (buttons.length != 1) {
-	//      UIALogger.logFail ("FAIL: Incorrect number of buttons on PIN login screen");
-	// }
+var failed = function (reason) {
 
-buttons [0].tap ();
-*/
-// UIATarget.localTarget().delay(20);
+	var data = {};
+	data.nerror = reason;
+
+	getNext (data);
+};
+
+var runLoop = function () {
+
+	var running = true;
+	do {
+		var intest = true;
+		var theTest = getNext ();
+		if (theTest.cmd == 'exit')
+			break;
+		do {
+			eval ('var testFunc = ' + theTest.func + ';');
+			testFunc ();
+		} while (intest);
+	} while (running);
+};
+
+runLoop ();
+
+
+
