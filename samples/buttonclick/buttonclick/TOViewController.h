@@ -10,4 +10,8 @@
 
 @interface TOViewController : UIViewController
 
+@property (weak, nonatomic) IBOutlet UITextField *textField;
+
+- (IBAction)buttonTouchUpInside:(id)sender;
+
 @end

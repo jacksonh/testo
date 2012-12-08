@@ -26,4 +26,10 @@
     // Dispose of any resources that can be recreated.
 }
 
+- (IBAction)buttonTouchUpInside:(id)sender
+{
+    [[self textField] setText:@"Clicked"];
+}
+
+
 @end
