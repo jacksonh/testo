@@ -1,9 +1,12 @@
 
 #import "/Users/jackson/Projects/testo/mechanic.js"
+#import "/Users/jackson/Projects/testo/console.js"
 
 
 var _message;
 var _aTestIsRunning;
+
+var console = new Console ();
 
 
 var _addArgumentsToMessage = function (msg, args) {
@@ -15,7 +18,7 @@ var _addArgumentsToMessage = function (msg, args) {
 };
 
 var next = function () {
-	UIALogger.logDebug ('called next');
+	console.log ('called next');
 
 	_message = { cmd: 'next' };
 	_addArgumentsToMessage (_message, arguments);
@@ -23,7 +26,7 @@ var next = function () {
 };
 
 var fail = function (reason) {
-	UIALogger.logDebug ('called fail');
+	console.log ('called fail');
 
 	_message = { cmd: 'failed' };
 	_addArgumentsToMessage (_message, arguments);
@@ -32,7 +35,7 @@ var fail = function (reason) {
 
 var getNextMessage = function () {
 
-	UIALogger.logDebug ('getting next');
+	console.log ('getting next');
 
     var target = UIATarget.localTarget();
     var host = target.host();
@@ -57,13 +60,12 @@ var getNextMessage = function () {
 	    }
 
 	    if (result.exitCode != 0) {
-	        UIALogger.logDebug("exitCode: " + result.exitCode);
-	    	UIALogger.logDebug ('FUCKING FUCK');
+	        console.log ('exitCode: ' + result.exitCode);
 	    	return { cmd: 'failure' };
 	    }
 	    
 	    if (result.stdout.length > 0) {
-	        UIALogger.logDebug ("stdout: " + result.stdout);
+	        console.log ('stdout:  ' + result.stdout);
 	        result = JSON.parse (result.stdout);
 	    	break;
 	    }
@@ -85,7 +87,7 @@ var _testRunningTick = function () {
 
 var runLoop = function () {
 
-	UIALogger.logDebug ('starting runloop');
+	console.log ('starting runloop');
 
 	var running = true;
 	var target = UIATarget.localTarget ();
@@ -95,12 +97,12 @@ var runLoop = function () {
 		var _msg = getNextMessage ();
 		
 		if (_msg.cmd == 'exit') {
-			UIALogger.logDebug ('exiting test');
+			console.log ('exiting test');
 			break;
 		}
 
 		if (_msg.cmd == 'failure') {
-			UIALogger.logDebug ('Unable to communicate with the host.')
+			console.log ('Unable to communicate with the host.')
 			break;
 		}
 		
@@ -112,10 +114,6 @@ var runLoop = function () {
 				
 				try {
 					eval ('_testFunc = ' + _msg.func + ';');
-				} catch (_err) {
-					fail ('error evaluating test: ' + _err);
-				}
-				try {
 					_testFunc (target, app, next);
 				} catch (_err) {
 					fail ('error executing test' + _err);
