@@ -25,5 +25,13 @@ device.step ('verify text is set to clicked', function (target, app, next) {
 	button.tap ();
 */
 	console.log ('using the log function, gawd this is nice!');
-	next ();
+
+	setTimeout (function () { 
+		console.log ('in the setTimeout callback');
+		setTimeout (function () { 
+			console.log ('in the other setTimeout callback');
+			console.log ('calling next');
+			next ();
+		}, 0);
+	}, 0);
 });
