@@ -8,6 +8,19 @@ Console.prototype.log = function (str) {
 };
 
 //
+// Alias all these guys so its easier for people to C&P code
+//
+Console.prototype.info = Console.prototype.log;
+Console.prototype.warn = Console.prototype.log
+Console.prototype.error = Console.prototype.log;
+
+
+Console.prototype.dir = function(object) {
+  this._stdout.write(util.inspect(object) + '\n');
+};
+
+
+//
 // Taken from node.js
 //
 var formatRegExp = /%[sdj%]/g;
