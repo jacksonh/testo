@@ -3,11 +3,67 @@
 #import "/Users/jackson/Projects/testo/console.js"
 
 
-var _message;
-var _aTestIsRunning;
-
 var console = new Console ();
 
+var timeoutHead;
+var setTimeout = function (func, ms) {
+	console.log ('setting a timeout: ' + func);
+	var expires = new Date ().getTime ();
+	var t = {
+		func: func,
+		expires: expires
+	};
+
+	if (!timeoutHead) {
+		timeoutHead = t;
+		return t;
+	}
+
+	if (expires < timeoutHead.expires) {
+		t.next = timeoutHead;
+		timeoutHead = t;
+	}
+
+    var prev = timeoutHead;
+    var c = prev.next;
+    while (c) {
+    	if (c.expires > expires) {
+    		break;
+    	}
+    }
+
+    t.next = prev.next;
+    prev.next = t;
+
+	return t;
+};
+
+var clearTimeout = function (t) {
+	
+};
+
+var fireTimeouts = function () {
+	var fire = [];
+	var time = new Date ().getTime ();
+
+	var c;
+	for (c = timeoutHead; c; c = c.next) {
+		if (c.expires > time)
+			break;
+		fire.push (c);
+	}
+	timeoutHead = c;
+	console.log ('new timeoutHead: ' + c);
+	console.log ('number of timeouts to fire:  ' + fire.length);
+
+	for (var i = 0; i < fire.length; i++) {
+		fire [i].func ();
+	}
+};
+
+
+var _message;
+var _aTestIsRunning;
 
 var _addArgumentsToMessage = function (msg, args) {
 	if (args.length > 0) {
@@ -26,7 +82,7 @@ var next = function () {
 };
 
 var fail = function (reason) {
-	console.log ('called fail');
+	console.log ('called fail:  ' + reason);
 
 	_message = { cmd: 'failed' };
 	_addArgumentsToMessage (_message, arguments);
@@ -80,6 +136,8 @@ var _beginTest = function () {
 };
 
 var _testRunningTick = function () {
+	fireTimeouts ();
+
 	if (!_aTestIsRunning)
 		return;
 	UIATarget.localTarget ().delay (1);	
@@ -109,15 +167,17 @@ var runLoop = function () {
 		if (_msg.cmd == 'func') {
 			_beginTest ();
 			
-			do {
-				var _testFunc;
+			var _testFunc;
 				
-				try {
-					eval ('_testFunc = ' + _msg.func + ';');
-					_testFunc (target, app, next);
-				} catch (_err) {
-					fail ('error executing test' + _err);
-				} 
+			try {
+				eval ('_testFunc = ' + _msg.func + ';');
+				_testFunc.apply (null, [target, app, next]);
+			} catch (_err) {
+				fail ('error executing test' + _err);
+			} 
+
+			do {
+				
 				
 				_testRunningTick ();
 			} while (_aTestIsRunning);
