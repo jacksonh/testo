@@ -15,8 +15,12 @@ Console.prototype.warn = Console.prototype.log
 Console.prototype.error = Console.prototype.log;
 
 
-Console.prototype.dir = function(object) {
-  this._stdout.write(util.inspect(object) + '\n');
+Console.prototype.dir = function (object) {
+	this.log ('%s:', object);
+	for (var att in object) {
+		var val = (typeof object [att] == 'function') ? 'function' : object [att];
+		this.log ('  %s: %s', att, val);
+	}
 };
 
 
