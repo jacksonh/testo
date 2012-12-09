@@ -24,6 +24,6 @@ device.step ('verify text is set to clicked', function (target, app, next) {
 
 	button.tap ();
 */
-	UIALogger.logDebug ('pressing the click button');
+	console.log ('using the log function, gawd this is nice!');
 	next ();
 });
