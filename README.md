@@ -9,6 +9,11 @@ I had planned on commercializing testo and making it into a real product, but de
 
 Its unfinished and undocumented. Some of the ideas in it are good, some are bad. I probably wouldn't use it if I were you. Someday I might pay better attention to it.
 
+Architecture
+------------
+
+testo runs under node-unit. It generates some wrapper stuff to invoke Instruments, and passes a test script to instruments. It then starts a local webserver that hosts the tests. The test script, running on instruments contacts the webserver asking for each step of the test and returning the results of the last step.
+
 
 Slaves:
 -------
