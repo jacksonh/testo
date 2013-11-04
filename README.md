@@ -1,6 +1,12 @@
 testo
 =====
 
+This is a framework for running iOS acceptance tests. Basically it runs UIAutomation tests inside of node-unit and allows for some communication between node-unit ("the server") and instruments ("the host").
+
+I had planned on commercializing testo and making it into a real product, but decided against it. So here it is. 
+
+Its unfinished and undocumented. Some of the ideas in it are good, some are bad. I probably wouldn't use it if I were you. Someday I might pay better attention to it.
+
 
 Slaves:
 -------
