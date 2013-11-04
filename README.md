@@ -7,7 +7,7 @@ The sort of nice thing about this is you get a real test harness around all the 
 
 I had planned on commercializing testo and making it into a real product, but decided against it. So here it is. 
 
-Its unfinished and undocumented. Some of the ideas in it are good, some are bad. I probably wouldn't use it if I were you. Someday I might pay better attention to it.
+**Its unfinished and undocumented. Some of the ideas in it are good, some are bad. I probably wouldn't use it if I were you. Someday I might pay better attention to it.**
 
 Architecture
 ------------
